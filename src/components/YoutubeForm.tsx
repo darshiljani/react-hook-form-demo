@@ -1,10 +1,16 @@
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 
 type FormValues = {
   username: string;
   email: string;
   channel: string;
+  social: {
+    twitter: string;
+    facebook: string;
+  };
+  phonenumbers: string[];
+  phNumbers: { number: string }[];
 };
 
 function YoutubeForm() {
@@ -18,6 +24,12 @@ function YoutubeForm() {
         username: data.username,
         email: data.email,
         channel: "",
+        social: {
+          twitter: "",
+          facebook: "",
+        },
+        phonenumbers: ["", ""],
+        phNumbers: [{ number: "" }],
       };
     },
   });
@@ -38,7 +50,7 @@ function YoutubeForm() {
       >
         <h3 className="text-start">Youtube form (Renders : {renderCount})</h3>
         <div className="flex items-center gap-4">
-          <label htmlFor="username" className="w-20">
+          <label htmlFor="username" className="w-40">
             Username
           </label>
           <input
@@ -52,7 +64,7 @@ function YoutubeForm() {
         </div>
 
         <div className="flex items-center gap-4">
-          <label htmlFor="email" className="w-20">
+          <label htmlFor="email" className="w-40">
             Email
           </label>
           <input
@@ -84,7 +96,7 @@ function YoutubeForm() {
         </div>
 
         <div className="flex items-center gap-4">
-          <label htmlFor="channel" className="w-20">
+          <label htmlFor="channel" className="w-40">
             Channel
           </label>
           <input
@@ -96,6 +108,63 @@ function YoutubeForm() {
           ></input>
           <span className="error">{errors.channel?.message}</span>
         </div>
+
+        <div className="flex items-center gap-4">
+          <label htmlFor="twitter" className="w-40">
+            Twitter
+          </label>
+          <input
+            type="text"
+            id="twitter"
+            {...register("social.twitter", {
+              required: "Twitter username is required!",
+            })}
+          ></input>
+          <span className="error">{errors.social?.twitter?.message}</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <label htmlFor="facebook" className="w-40">
+            Facebook
+          </label>
+          <input
+            type="text"
+            id="facebook"
+            {...register("social.facebook", {
+              required: "Facebook username is required!",
+            })}
+          ></input>
+          <span className="error">{errors.social?.facebook?.message}</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <label htmlFor="primary-phone" className="w-40">
+            Primary Phone number
+          </label>
+          <input
+            type="text"
+            id="primary-phone"
+            {...register("phonenumbers.0", {
+              required: "Primary phone number is required!",
+            })}
+          ></input>
+          <span className="error">{errors?.phonenumbers?.[0]?.message}</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <label htmlFor="secondary-phone" className="w-40">
+            Secondary Phone number
+          </label>
+          <input
+            type="text"
+            id="secondary-phone"
+            {...register("phonenumbers.1", {
+              required: "Secondary phone number is required!",
+            })}
+          ></input>
+          <span className="error">{errors?.phonenumbers?.[1]?.message}</span>
+        </div>
+
         <button type="submit" className="bg-white text-black w-1/4">
           Submit
         </button>
