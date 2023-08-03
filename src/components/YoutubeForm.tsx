@@ -35,6 +35,11 @@ function YoutubeForm() {
   });
   const { errors } = formState;
 
+  const { fields, append, remove } = useFieldArray({
+    name: "phNumbers",
+    control: control,
+  });
+
   renderCount++;
 
   async function onSubmit(data: FormValues) {
@@ -44,7 +49,7 @@ function YoutubeForm() {
   return (
     <div className="container">
       <form
-        className="flex flex-col gap-4"
+        className="flex flex-col justify-start gap-4"
         onSubmit={handleSubmit(onSubmit)}
         noValidate
       >
@@ -163,6 +168,43 @@ function YoutubeForm() {
             })}
           ></input>
           <span className="error">{errors?.phonenumbers?.[1]?.message}</span>
+        </div>
+
+        <div className="flex flex-col mt-10">
+          <label className="text-start">Phone number array field</label>
+          <div className="flex flex-col gap-2">
+            {fields.map((field, index) => {
+              return (
+                <div key={field.id} className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    {...register(`phNumbers.${index}.number` as const, {
+                      required: "This field cannot be blank!",
+                    })}
+                  />
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      className="bg-red-500 text-white"
+                      onClick={() => remove(index)}
+                    >
+                      Remove number
+                    </button>
+                  )}
+                  <p className="error">{errors?.phNumbers?.[index]?.message}</p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex items-center mt-4">
+            <button
+              type="button"
+              className="bg-white text-black"
+              onClick={() => append({ number: "" })}
+            >
+              Add number
+            </button>
+          </div>
         </div>
 
         <button type="submit" className="bg-white text-black w-1/4">
