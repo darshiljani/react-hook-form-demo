@@ -29,6 +29,7 @@ function YoutubeForm() {
     getValues,
     setValue,
     reset,
+    trigger,
   } = useForm<FormValues>({
     defaultValues: async () => {
       const res = await fetch("https://jsonplaceholder.typicode.com/users/1");
@@ -47,6 +48,7 @@ function YoutubeForm() {
         dob: new Date(),
       };
     },
+    mode: "onTouched",
   });
 
   const {
@@ -164,6 +166,13 @@ function YoutubeForm() {
                     !fieldValue.endsWith("baddomain.com") ||
                     "This domain is not supported!"
                   );
+                },
+                emailAvailable: async (fieldValue) => {
+                  const res = await fetch(
+                    `https://jsonplaceholder.typicode.com/users?email=${fieldValue}`
+                  );
+                  const data = await res.json();
+                  return data.length === 0 || "Email already exists!";
                 },
               },
             })}
@@ -341,6 +350,13 @@ function YoutubeForm() {
             Set value
           </button>
         </div>
+        <button
+          className="bg-yellow-600 text-black w-1/2"
+          onClick={() => trigger()} /* Trigger validation for all fields */
+          /* onClick={() => trigger(["channel"])}   /*   Trigger validation for certain fields */
+        >
+          Validate
+        </button>
       </form>
 
       <DevTool control={control} />
