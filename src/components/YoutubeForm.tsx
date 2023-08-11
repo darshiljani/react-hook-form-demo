@@ -1,5 +1,6 @@
 import { useForm, useFieldArray } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
+import { useEffect } from "react";
 
 type FormValues = {
   username: string;
@@ -11,12 +12,22 @@ type FormValues = {
   };
   phonenumbers: string[];
   phNumbers: { number: string }[];
+  age: number;
+  dob: Date;
 };
 
 function YoutubeForm() {
   let renderCount = 0;
   // const form = useForm();
-  const { register, control, handleSubmit, formState } = useForm<FormValues>({
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState,
+    watch,
+    getValues,
+    setValue,
+  } = useForm<FormValues>({
     defaultValues: async () => {
       const res = await fetch("https://jsonplaceholder.typicode.com/users/1");
       const data = await res.json();
@@ -30,10 +41,15 @@ function YoutubeForm() {
         },
         phonenumbers: ["", ""],
         phNumbers: [{ number: "" }],
+        age: 0,
+        dob: new Date(),
       };
     },
   });
-  const { errors } = formState;
+  
+  const { errors, touchedFields, dirtyFields, isDirty } = formState;
+
+  console.log(touchedFields, dirtyFields);
 
   const { fields, append, remove } = useFieldArray({
     name: "phNumbers",
@@ -46,8 +62,34 @@ function YoutubeForm() {
     console.info("Submitted data : ", data);
   }
 
+  const watchSingleField = watch("username");
+  const watchMultipleFields = watch(["username", "email"]);
+  const watchForm = watch();
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      console.log(value);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
+
+  const handleGetValues = () => {
+    console.log("get values ==>", getValues(["username", "social.facebook"]));
+  };
+
+  const handleSetValue = () => {
+    setValue("username", "", {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  };
+
   return (
     <div className="container">
+      <h2>Watching single value : {watchSingleField}</h2>
+      <h2>Watching multiple values : {watchMultipleFields}</h2>
+      <h2>Watching whole form : {JSON.stringify(watchForm)}</h2>
       <form
         className="flex flex-col justify-start gap-4"
         onSubmit={handleSubmit(onSubmit)}
@@ -170,6 +212,36 @@ function YoutubeForm() {
           <span className="error">{errors?.phonenumbers?.[1]?.message}</span>
         </div>
 
+        <div className="flex items-center gap-4">
+          <label htmlFor="age" className="w-40">
+            Age
+          </label>
+          <input
+            type="number"
+            id="age"
+            {...register("age", {
+              valueAsNumber: true,
+              required: "Age is required!",
+            })}
+          ></input>
+          <span className="error">{errors.age?.message}</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <label htmlFor="dob" className="w-40">
+            Date of birth
+          </label>
+          <input
+            type="date"
+            id="dob"
+            {...register("dob", {
+              valueAsDate: true,
+              required: "Date of birth is required!",
+            })}
+          ></input>
+          <span className="error">{errors.dob?.message}</span>
+        </div>
+
         <div className="flex flex-col mt-10">
           <label className="text-start">Phone number array field</label>
           <div className="flex flex-col gap-2">
@@ -199,7 +271,7 @@ function YoutubeForm() {
           <div className="flex items-center mt-4">
             <button
               type="button"
-              className="bg-white text-black"
+              className="border-2 text-white"
               onClick={() => append({ number: "" })}
             >
               Add number
@@ -209,6 +281,20 @@ function YoutubeForm() {
 
         <button type="submit" className="bg-white text-black w-1/4">
           Submit
+        </button>
+        <button
+          type="button"
+          className="bg-white text-black w-1/4"
+          onClick={handleGetValues}
+        >
+          Get values
+        </button>
+        <button
+          type="button"
+          className="bg-white text-black w-1/4"
+          onClick={handleSetValue}
+        >
+          Set value
         </button>
       </form>
 
