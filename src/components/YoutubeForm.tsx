@@ -1,4 +1,5 @@
 import { useForm, useFieldArray } from "react-hook-form";
+import type { FieldErrors } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { useEffect } from "react";
 
@@ -27,6 +28,7 @@ function YoutubeForm() {
     watch,
     getValues,
     setValue,
+    reset,
   } = useForm<FormValues>({
     defaultValues: async () => {
       const res = await fetch("https://jsonplaceholder.typicode.com/users/1");
@@ -46,10 +48,20 @@ function YoutubeForm() {
       };
     },
   });
-  
-  const { errors, touchedFields, dirtyFields, isDirty } = formState;
 
-  console.log(touchedFields, dirtyFields);
+  const {
+    errors,
+    touchedFields,
+    dirtyFields,
+    isDirty,
+    isValid,
+    isSubmitting,
+    isSubmitted,
+    isSubmitSuccessful,
+    submitCount,
+  } = formState;
+
+  // console.log(touchedFields, dirtyFields);
 
   const { fields, append, remove } = useFieldArray({
     name: "phNumbers",
@@ -60,6 +72,10 @@ function YoutubeForm() {
 
   async function onSubmit(data: FormValues) {
     console.info("Submitted data : ", data);
+  }
+
+  async function onError(errors: FieldErrors) {
+    console.warn(errors);
   }
 
   const watchSingleField = watch("username");
@@ -85,17 +101,30 @@ function YoutubeForm() {
     });
   };
 
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset();
+    }
+  }, [isSubmitSuccessful, reset]);
+
   return (
     <div className="container">
       <h2>Watching single value : {watchSingleField}</h2>
-      <h2>Watching multiple values : {watchMultipleFields}</h2>
-      <h2>Watching whole form : {JSON.stringify(watchForm)}</h2>
+      {/* <h2>Watching multiple values : {watchMultipleFields}</h2>
+      <h2>Watching whole form : {JSON.stringify(watchForm)}</h2> */}
       <form
         className="flex flex-col justify-start gap-4"
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit, onError)}
         noValidate
       >
         <h3 className="text-start">Youtube form (Renders : {renderCount})</h3>
+
+        {/* {isSubmitSuccessful && (
+          <div className="bg-green-600 text-white p-2">
+            Submitted successfully!
+          </div>
+        )} */}
+
         <div className="flex items-center gap-4">
           <label htmlFor="username" className="w-40">
             Username
@@ -206,6 +235,7 @@ function YoutubeForm() {
             type="text"
             id="secondary-phone"
             {...register("phonenumbers.1", {
+              disabled: watch("phonenumbers.0") === "",
               required: "Secondary phone number is required!",
             })}
           ></input>
@@ -279,23 +309,38 @@ function YoutubeForm() {
           </div>
         </div>
 
-        <button type="submit" className="bg-white text-black w-1/4">
-          Submit
-        </button>
-        <button
-          type="button"
-          className="bg-white text-black w-1/4"
-          onClick={handleGetValues}
-        >
-          Get values
-        </button>
-        <button
-          type="button"
-          className="bg-white text-black w-1/4"
-          onClick={handleSetValue}
-        >
-          Set value
-        </button>
+        <div className="flex gap-4">
+          <button
+            type="submit"
+            className="bg-green-600 text-black w-1/4 disabled:cursor-not-allowed disabled:bg-stone-600"
+            // disabled={!isDirty || !isValid}
+            disabled={!isDirty || isSubmitting}
+          >
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </button>
+          <button
+            className="bg-red-600 text-black w-1/4"
+            onClick={() => reset()}
+          >
+            Reset
+          </button>
+        </div>
+        <div className="flex gap-4">
+          <button
+            type="button"
+            className="bg-white text-black w-1/4"
+            onClick={handleGetValues}
+          >
+            Get values
+          </button>
+          <button
+            type="button"
+            className="bg-white text-black w-1/4"
+            onClick={handleSetValue}
+          >
+            Set value
+          </button>
+        </div>
       </form>
 
       <DevTool control={control} />
